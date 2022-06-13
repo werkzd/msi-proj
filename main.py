@@ -17,13 +17,14 @@ datasets = ['appendicitis', 'balance', 'banana','ecoli4', 'ecoli-0-1_vs_5',
             'ecoli-0-4-6_vs_5', 'ecoli-0-6-7_vs_5', 'magic', 'page-blocks-1-3_vs_4', 'phoneme',
             'vowel0', 'yeast3', 'yeast4', 'yeast5', 'yeast6']
 
-
 n_datasets = len(datasets)
 
 for data_id, dataset in enumerate(datasets):
     dataset = np.genfromtxt("%s.csv" % (dataset), delimiter=",")
     X = dataset[:, :-1]
     y = dataset[:, -1].astype(int)
+    
+    print("Dataset: " + str(data_id))
 
     clfs = {
     'gnb': GaussianNB(),
@@ -32,7 +33,8 @@ for data_id, dataset in enumerate(datasets):
     }
 
     for clf_id, clf_name in enumerate(clfs):
-
+        print("Classifier: " + clf_name)
+        
         classifier = clfs[clf_name]
 
         clf = BaggingClassifier(base_estimator=classifier, n_estimators=5, bootstrap=True, random_state=1)
@@ -95,14 +97,14 @@ for data_id, dataset in enumerate(datasets):
                         y[test], y_pred)
 
         #zapisanie wynikow
-        np.save('resultsB' + str(data_id)+clf_name, scores)
-        np.save('resultsA' + str(data_id)+clf_name, scores2)
-
-        scores = np.load("resultsB"+str(data_id)+clf_name+".npy")
-        scores = np.mean(scores, axis=1).T
+        scores = np.concatenate((scores1, scores2), axis = 0)
+        np.save('results' + str(data_id) + clf_name, scores)
         
-        scores2 = np.load("resultsA"+str(data_id)+clf_name+".npy")
-        scores2 = np.mean(scores2, axis=1).T
+
+        scores = np.load("results"+str(data_id)+clf_name+".npy")
+        print(scores.shape)
+        scores = np.mean(scores, axis=1).T
+        print(scores.shape)
 
         #metryki i metody
         metrics=["Recall", 'Precision', 'Specificity', 'F1', 'G-mean', 'BAC']
@@ -123,15 +125,8 @@ for data_id, dataset in enumerate(datasets):
         color="grey", size=7)
         plt.ylim(0,1)
 
-
         for method_id, method in enumerate(methods):
             values=scores[:, method_id].tolist()
-            values += values[:1]
-            print(values)
-            ax.plot(angles, values, linewidth=1, linestyle='solid', label=method)
-
-        for method_id, method in enumerate(methods2):
-            values=scores2[:, method_id].tolist()
             values += values[:1]
             print(values)
             ax.plot(angles, values, linewidth=1, linestyle='solid', label=method)
