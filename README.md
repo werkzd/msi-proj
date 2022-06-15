@@ -1,1 +1,1 @@
-# msi-proj
+# Projekt realizowany podczas kursu Metody sztucznej inteligencji
